@@ -1,1 +1,1667 @@
-# mi-biblioteca
+# mi-biblioteca<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Biblioteca</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f5f0e8;
+    --paper: #faf7f2;
+    --ink: #1a1410;
+    --brown: #6b4c2a;
+    --gold: #c9973a;
+    --rust: #9e3d2b;
+    --sage: #5a7a5c;
+    --shadow: rgba(26,20,16,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* Texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 2rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  .logo {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+  }
+
+  .logo-icon {
+    font-size: 1.8rem;
+  }
+
+  .logo h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .logo span {
+    font-size: 0.8rem;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .tabs {
+    display: flex;
+    background: rgba(255,255,255,0.08);
+    border-radius: 6px;
+    padding: 3px;
+  }
+
+  .tab {
+    padding: 0.5rem 1.2rem;
+    border: none;
+    background: transparent;
+    color: rgba(245,240,232,0.6);
+    cursor: pointer;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    background: var(--gold);
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .stats {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.78rem;
+    color: rgba(245,240,232,0.5);
+    letter-spacing: 0.05em;
+  }
+
+  .stat strong {
+    display: block;
+    font-size: 1.3rem;
+    color: var(--gold);
+    font-family: 'Playfair Display', serif;
+    line-height: 1;
+  }
+
+  /* MAIN */
+  main {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ADD BOOK BUTTON */
+  .add-btn {
+    position: fixed;
+    bottom: 2.5rem;
+    right: 2.5rem;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 50px;
+    padding: 1rem 1.8rem;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    transition: all 0.25s;
+    z-index: 50;
+  }
+
+  .add-btn:hover {
+    background: var(--brown);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+
+  /* SEARCH BAR */
+  .search-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    align-items: center;
+  }
+
+  .search-input {
+    flex: 1;
+    padding: 0.85rem 1.2rem;
+    border: 2px solid rgba(26,20,16,0.1);
+    border-radius: 8px;
+    background: var(--paper);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.95rem;
+    color: var(--ink);
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--brown);
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 5rem 2rem;
+    color: rgba(26,20,16,0.35);
+  }
+
+  .empty-icon { font-size: 4rem; margin-bottom: 1rem; }
+  .empty h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--brown); }
+  .empty p { font-size: 0.9rem; font-weight: 300; }
+
+  /* GRID */
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2rem;
+  }
+
+  /* BOOK CARD */
+  .book-card {
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow: 4px 4px 0 rgba(107,76,42,0.15), 0 8px 24px var(--shadow);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .book-card:hover {
+    transform: translateY(-4px) rotate(0.5deg);
+    box-shadow: 6px 10px 0 rgba(107,76,42,0.2), 0 16px 40px var(--shadow);
+  }
+
+  .book-cover {
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .book-cover img.cover-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+  }
+
+  .book-cover .cover-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.05) 60%);
+  }
+
+  .book-spine {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 12px;
+    background: rgba(0,0,0,0.25);
+    z-index: 2;
+  }
+
+  .book-cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    color: rgba(255,255,255,0.95);
+    line-height: 1.3;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    z-index: 3;
+    position: relative;
+  }
+
+  /* preview de portada en el formulario */
+  .cover-preview {
+    width: 90px;
+    height: 130px;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 3px 3px 12px rgba(0,0,0,0.25);
+    flex-shrink: 0;
+    background: rgba(107,76,42,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+  }
+
+  .cover-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .cover-row {
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+  }
+
+  .cover-row .cover-fields {
+    flex: 1;
+  }
+
+  .badge-read {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    background: var(--sage);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+
+  .badge-want {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    background: var(--gold);
+    color: var(--ink);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+
+  .book-info {
+    padding: 1rem;
+    border-top: 1px solid rgba(107,76,42,0.1);
+  }
+
+  .book-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 0.25rem;
+    color: var(--ink);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .book-author {
+    font-size: 0.75rem;
+    color: var(--brown);
+    font-weight: 300;
+    font-style: italic;
+  }
+
+  .book-rating {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--gold);
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,20,16,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    animation: overlayIn 0.2s ease;
+  }
+
+  @keyframes overlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal {
+    background: var(--paper);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+    animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.92) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-header {
+    padding: 1.8rem 2rem 1.2rem;
+    border-bottom: 1px solid rgba(107,76,42,0.12);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .modal-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .modal-header p {
+    font-size: 0.82rem;
+    color: var(--brown);
+    font-style: italic;
+    margin-top: 0.2rem;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: rgba(26,20,16,0.4);
+    padding: 0.2rem;
+    line-height: 1;
+    transition: color 0.2s;
+    flex-shrink: 0;
+  }
+
+  .close-btn:hover { color: var(--rust); }
+
+  .modal-body {
+    padding: 1.5rem 2rem 2rem;
+  }
+
+  /* FORM */
+  .form-section {
+    margin-bottom: 1.8rem;
+  }
+
+  .form-section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--brown);
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(107,76,42,0.12);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: rgba(26,20,16,0.6);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+  }
+
+  input[type="text"], input[type="date"], textarea, select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid rgba(107,76,42,0.15);
+    border-radius: 6px;
+    background: white;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--brown);
+    background: #fff;
+  }
+
+  textarea { min-height: 100px; }
+
+  .ai-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: linear-gradient(135deg, var(--ink), var(--brown));
+    color: var(--cream);
+    border: none;
+    border-radius: 6px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+  }
+
+  .ai-btn:hover:not(:disabled) {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+
+  .ai-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .ai-btn .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .rating-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.3rem;
+  }
+
+  .star-btn {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: transform 0.15s;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .star-btn:hover { transform: scale(1.2); }
+
+  .status-select {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .status-option {
+    flex: 1;
+    padding: 0.65rem;
+    border: 2px solid rgba(107,76,42,0.15);
+    border-radius: 6px;
+    background: white;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    color: rgba(26,20,16,0.5);
+  }
+
+  .status-option.active-read {
+    border-color: var(--sage);
+    background: rgba(90,122,92,0.08);
+    color: var(--sage);
+  }
+
+  .status-option.active-want {
+    border-color: var(--gold);
+    background: rgba(201,151,58,0.08);
+    color: #a07020;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgba(107,76,42,0.1);
+  }
+
+  .btn-secondary {
+    padding: 0.7rem 1.5rem;
+    background: transparent;
+    border: 2px solid rgba(107,76,42,0.2);
+    border-radius: 6px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: rgba(26,20,16,0.5);
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: var(--brown); color: var(--brown); }
+
+  .btn-primary {
+    padding: 0.7rem 1.8rem;
+    background: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--cream);
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .btn-primary:hover { background: var(--brown); border-color: var(--brown); }
+
+  .btn-danger {
+    padding: 0.7rem 1.2rem;
+    background: transparent;
+    border: 2px solid rgba(158,61,43,0.2);
+    border-radius: 6px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--rust);
+    transition: all 0.2s;
+    margin-right: auto;
+  }
+
+  .btn-danger:hover { background: rgba(158,61,43,0.06); border-color: var(--rust); }
+
+  /* DETAIL VIEW */
+  .detail-cover {
+    height: 160px;
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: 1rem 1.2rem;
+  }
+
+  .detail-cover img.cover-img-large {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .detail-cover .cover-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%);
+  }
+
+  .detail-cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.95);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    position: relative;
+    z-index: 1;
+  }
+
+  .detail-meta {
+    display: flex;
+    gap: 2rem;
+    margin: 1rem 0 1.2rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .meta-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(26,20,16,0.4);
+  }
+
+  .meta-value {
+    font-size: 0.9rem;
+    color: var(--ink);
+    font-family: 'Playfair Display', serif;
+  }
+
+  .sinopsis-text {
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: rgba(26,20,16,0.75);
+    font-weight: 300;
+    font-style: italic;
+    background: rgba(107,76,42,0.04);
+    padding: 1rem 1.2rem;
+    border-left: 3px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 1rem;
+  }
+
+  .opinion-text {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: rgba(26,20,16,0.8);
+    background: white;
+    padding: 1rem 1.2rem;
+    border: 1px solid rgba(107,76,42,0.1);
+    border-radius: 6px;
+    white-space: pre-wrap;
+  }
+
+  /* Book colors */
+  .color-0 { background: linear-gradient(160deg, #4a3728 0%, #6b4c2a 100%); }
+  .color-1 { background: linear-gradient(160deg, #2d4a3e 0%, #5a7a5c 100%); }
+  .color-2 { background: linear-gradient(160deg, #3d2b1a 0%, #8b5e3c 100%); }
+  .color-3 { background: linear-gradient(160deg, #1a2a4a 0%, #2d4a7a 100%); }
+  .color-4 { background: linear-gradient(160deg, #4a2020 0%, #9e3d2b 100%); }
+  .color-5 { background: linear-gradient(160deg, #2a2a4a 0%, #5a4a8a 100%); }
+  .color-6 { background: linear-gradient(160deg, #3a3010 0%, #7a6a20 100%); }
+  .color-7 { background: linear-gradient(160deg, #1a3a3a 0%, #2a6a6a 100%); }
+
+  @media (max-width: 600px) {
+    header { padding: 1.2rem 1.2rem; flex-wrap: wrap; gap: 1rem; }
+    .stats { display: none; }
+    .books-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.2rem; }
+    .form-row { grid-template-columns: 1fr; }
+    main { padding: 1.5rem 1rem; }
+    .modal { border-radius: 12px 12px 0 0; position: fixed; bottom: 0; max-height: 92vh; }
+    .modal-overlay { align-items: flex-end; padding: 0; }
+    .chat-panel { width: 100vw; right: 0; border-radius: 16px 16px 0 0; }
+  }
+
+  /* ===== CHATBOT ===== */
+  .chat-header-btn {
+    background: linear-gradient(135deg, var(--gold), #e8a820);
+    color: var(--ink);
+    border: none;
+    border-radius: 20px;
+    padding: 0.5rem 1.1rem;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(201,151,58,0.35);
+  }
+  .chat-header-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,151,58,0.45); }
+
+  /* Panel lateral */
+  .chat-panel {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 400px;
+    height: 100vh;
+    background: var(--paper);
+    box-shadow: -8px 0 40px rgba(0,0,0,0.18);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 1px solid rgba(107,76,42,0.1);
+  }
+  .chat-panel.open { right: 0; }
+
+  .chat-panel-header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-shrink: 0;
+  }
+  .chat-panel-header .chat-avatar {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--gold), #e8a820);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .chat-panel-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    flex: 1;
+  }
+  .chat-panel-header p {
+    font-size: 0.72rem;
+    color: rgba(245,240,232,0.5);
+    margin-top: 0.1rem;
+  }
+  .chat-close {
+    background: none; border: none;
+    color: rgba(245,240,232,0.5);
+    font-size: 1.3rem; cursor: pointer;
+    transition: color 0.2s; padding: 0.2rem;
+  }
+  .chat-close:hover { color: var(--cream); }
+
+  /* Mensajes */
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.2rem 1.2rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: rgba(107,76,42,0.2); border-radius: 2px; }
+
+  .chat-msg {
+    display: flex;
+    gap: 0.6rem;
+    animation: msgIn 0.25s ease;
+  }
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .chat-msg.user { flex-direction: row-reverse; }
+
+  .chat-msg-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .chat-msg.bot .chat-msg-avatar { background: linear-gradient(135deg, var(--gold), #e8a820); }
+  .chat-msg.user .chat-msg-avatar { background: var(--ink); color: var(--cream); }
+
+  .chat-msg-bubble {
+    max-width: 82%;
+    padding: 0.7rem 1rem;
+    border-radius: 14px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  .chat-msg.bot .chat-msg-bubble {
+    background: white;
+    border: 1px solid rgba(107,76,42,0.1);
+    border-radius: 4px 14px 14px 14px;
+    color: var(--ink);
+  }
+  .chat-msg.user .chat-msg-bubble {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 14px 4px 14px 14px;
+  }
+
+  .chat-msg-bubble strong { color: var(--brown); }
+  .chat-msg.user .chat-msg-bubble strong { color: var(--gold); }
+
+  /* Typing indicator */
+  .chat-typing {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    animation: msgIn 0.25s ease;
+  }
+  .typing-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    background: white;
+    border: 1px solid rgba(107,76,42,0.1);
+    border-radius: 4px 14px 14px 14px;
+  }
+  .typing-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: typingBounce 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingBounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-5px); opacity: 1; }
+  }
+
+  /* Sugerencias rápidas */
+  .chat-suggestions {
+    padding: 0.6rem 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    border-top: 1px solid rgba(107,76,42,0.07);
+  }
+  .chat-suggestion {
+    background: rgba(201,151,58,0.1);
+    border: 1px solid rgba(201,151,58,0.25);
+    border-radius: 20px;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+    color: var(--brown);
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .chat-suggestion:hover { background: rgba(201,151,58,0.2); }
+
+  /* Input */
+  .chat-input-area {
+    padding: 0.8rem 1.2rem 1.2rem;
+    border-top: 1px solid rgba(107,76,42,0.1);
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-end;
+    flex-shrink: 0;
+    background: var(--paper);
+  }
+  .chat-input {
+    flex: 1;
+    padding: 0.65rem 0.9rem;
+    border: 2px solid rgba(107,76,42,0.15);
+    border-radius: 20px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.88rem;
+    color: var(--ink);
+    background: white;
+    resize: none;
+    min-height: 40px;
+    max-height: 100px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .chat-input:focus { border-color: var(--brown); }
+  .chat-send {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .chat-send:hover { background: var(--brown); transform: scale(1.05); }
+  .chat-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* Backdrop semi-transparente */
+  .chat-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,20,16,0.25);
+    z-index: 299;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .chat-backdrop.open { opacity: 1; pointer-events: all; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-icon">📚</span>
+    <div>
+      <h1>Mi Biblioteca</h1>
+      <span>Colección personal</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="tabs">
+      <button class="tab active" onclick="setFilter('all')">Todos</button>
+      <button class="tab" onclick="setFilter('read')">Leídos</button>
+      <button class="tab" onclick="setFilter('want')">Por leer</button>
+    </div>
+    <button class="chat-header-btn" onclick="toggleChat()">
+      <span>✦</span> Recomiéndame
+    </button>
+    <div class="stats">
+      <div class="stat"><strong id="stat-read">0</strong>Leídos</div>
+      <div class="stat"><strong id="stat-want">0</strong>Por leer</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="search-bar">
+    <input type="text" class="search-input" placeholder="🔍  Buscar en tu biblioteca..." id="searchInput" oninput="renderBooks()">
+  </div>
+  <div id="booksGrid" class="books-grid"></div>
+</main>
+
+<button class="add-btn" onclick="openModal()">
+  <span>+</span> Añadir libro
+</button>
+
+<!-- CHAT BACKDROP -->
+<div class="chat-backdrop" id="chatBackdrop" onclick="toggleChat()"></div>
+
+<!-- CHAT PANEL -->
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-panel-header">
+    <div class="chat-avatar">✦</div>
+    <div style="flex:1">
+      <h3>Tu asesor literario</h3>
+      <p>Basado en tus libros favoritos</p>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+
+  <div class="chat-messages" id="chatMessages"></div>
+
+  <div class="chat-suggestions" id="chatSuggestions">
+    <button class="chat-suggestion" onclick="sendSuggestion(this)">¿Qué leo ahora?</button>
+    <button class="chat-suggestion" onclick="sendSuggestion(this)">Algo parecido a mis favoritos</button>
+    <button class="chat-suggestion" onclick="sendSuggestion(this)">Un clásico que me gustará</button>
+    <button class="chat-suggestion" onclick="sendSuggestion(this)">Sorpréndeme</button>
+  </div>
+
+  <div class="chat-input-area">
+    <textarea class="chat-input" id="chatInput" placeholder="Pregúntame qué leer..." rows="1"
+      onkeydown="handleChatKey(event)" oninput="autoResizeChat(this)"></textarea>
+    <button class="chat-send" id="chatSendBtn" onclick="sendChatMessage()">➤</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modalOverlay" class="modal-overlay" style="display:none" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="modalTitle">Añadir libro</h2>
+        <p id="modalSubtitle">Completa la ficha o deja que la IA lo haga</p>
+      </div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- Se llena dinámicamente -->
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- ESTADO ----
+let books = JSON.parse(localStorage.getItem('mybooks') || '[]');
+let currentFilter = 'all';
+let editingId = null;
+
+// ---- RENDER ----
+function renderBooks() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let list = books.filter(b => {
+    const matchFilter = currentFilter === 'all' || b.status === currentFilter;
+    const matchSearch = !q || b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+
+  const grid = document.getElementById('booksGrid');
+  const readCount = books.filter(b => b.status === 'read').length;
+  const wantCount = books.filter(b => b.status === 'want').length;
+  document.getElementById('stat-read').textContent = readCount;
+  document.getElementById('stat-want').textContent = wantCount;
+
+  if (list.length === 0) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="empty-icon">📖</div>
+      <h2>${q ? 'Sin resultados' : 'Tu biblioteca está vacía'}</h2>
+      <p>${q ? 'Prueba otra búsqueda.' : 'Añade tu primer libro con el botón de abajo.'}</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(b => {
+    const colorIdx = Math.abs([...b.title].reduce((a,c)=>a+c.charCodeAt(0),0)) % 8;
+    const stars = b.rating ? '★'.repeat(b.rating) + '☆'.repeat(5-b.rating) : '';
+    const badge = b.status === 'read'
+      ? `<span class="badge-read">✓ Leído</span>`
+      : `<span class="badge-want">♥ Por leer</span>`;
+    const coverContent = b.coverUrl
+      ? `<img class="cover-img" src="${esc(b.coverUrl)}" alt="Portada" onerror="this.style.display='none'">`
+      : '';
+    return `<div class="book-card" onclick="openDetail('${b.id}')">
+      <div class="book-cover color-${colorIdx}">
+        ${coverContent}
+        ${b.coverUrl ? '<div class="cover-overlay"></div>' : ''}
+        <div class="book-spine"></div>
+        ${badge}
+        ${!b.coverUrl ? `<span class="book-cover-title">${esc(b.title)}</span>` : ''}
+      </div>
+      <div class="book-info">
+        <div class="book-title">${esc(b.title)}</div>
+        <div class="book-author">${esc(b.author) || 'Autor desconocido'}</div>
+        ${stars ? `<div class="book-rating">${stars}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---- FILTER ----
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['all','read','want'][i] === f);
+  });
+  renderBooks();
+}
+
+// ---- MODAL ADD ----
+function openModal(prefill) {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Añadir libro';
+  document.getElementById('modalSubtitle').textContent = 'Completa la ficha o deja que la IA lo haga';
+  renderForm(prefill || {});
+  document.getElementById('modalOverlay').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').style.display = 'none';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function renderForm(data) {
+  const isRead = data.status === 'read';
+  const isWant = data.status === 'want';
+  const coverPreview = data.coverUrl
+    ? `<img src="${esc(data.coverUrl)}" alt="Portada" onerror="this.parentElement.innerHTML='📖'">`
+    : '📖';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-section">
+      <div class="form-section-title">📖 Datos del libro</div>
+      <div class="cover-row">
+        <div class="cover-preview" id="coverPreview">${coverPreview}</div>
+        <div class="cover-fields">
+          <div class="form-group">
+            <label>Título *</label>
+            <input type="text" id="f-title" value="${esc(data.title||'')}" placeholder="Título del libro">
+          </div>
+          <div class="form-group">
+            <label>Autor *</label>
+            <input type="text" id="f-author" value="${esc(data.author||'')}" placeholder="Nombre del autor">
+          </div>
+        </div>
+      </div>
+      <button class="ai-btn" id="aiBtnSearch" onclick="fetchBookInfo()">
+        <span>✨</span> Buscar información y portada con IA
+      </button>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">📝 Sinopsis</div>
+      <textarea id="f-synopsis" placeholder="La IA la completará automáticamente, o escribe aquí...">${esc(data.synopsis||'')}</textarea>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">📅 Estado y lectura</div>
+      <div class="form-group">
+        <label>Estado</label>
+        <div class="status-select">
+          <div class="status-option ${isRead ? 'active-read' : ''}" id="status-read" onclick="setStatus('read')">✓ Leído</div>
+          <div class="status-option ${isWant ? 'active-want' : ''}" id="status-want" onclick="setStatus('want')">♥ Por leer</div>
+        </div>
+      </div>
+      <div id="read-fields" style="${isRead ? '' : 'display:none'}">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fecha de lectura</label>
+            <input type="date" id="f-date" value="${data.date||''}">
+          </div>
+          <div class="form-group">
+            <label>Mi puntuación</label>
+            <div class="rating-group" id="starGroup">
+              ${[1,2,3,4,5].map(n=>`<button class="star-btn" onclick="setRating(${n})">${(data.rating||0)>=n?'★':'☆'}</button>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Mi opinión</label>
+          <textarea id="f-opinion" placeholder="¿Qué te pareció? ¿Lo recomendarías?">${esc(data.opinion||'')}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      ${editingId ? `<button class="btn-danger" onclick="deleteBook()">🗑 Eliminar</button>` : ''}
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveBook()">Guardar libro</button>
+    </div>
+  `;
+  window._rating = data.rating || 0;
+  window._status = data.status || '';
+  window._coverUrl = data.coverUrl || '';
+}
+
+function setStatus(s) {
+  window._status = s;
+  document.getElementById('status-read').className = 'status-option' + (s==='read' ? ' active-read' : '');
+  document.getElementById('status-want').className = 'status-option' + (s==='want' ? ' active-want' : '');
+  document.getElementById('read-fields').style.display = s==='read' ? '' : 'none';
+}
+
+function setRating(n) {
+  window._rating = n;
+  document.getElementById('starGroup').innerHTML =
+    [1,2,3,4,5].map(i=>`<button class="star-btn" onclick="setRating(${i})">${n>=i?'★':'☆'}</button>`).join('');
+}
+
+// ---- AI FETCH ----
+async function fetchBookInfo() {
+  const title = document.getElementById('f-title').value.trim();
+  const author = document.getElementById('f-author').value.trim();
+  if (!title) { alert('Escribe primero el título del libro'); return; }
+
+  const btn = document.getElementById('aiBtnSearch');
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> Buscando info...`;
+
+  try {
+    // 1. Ask Claude for book info + ISBN
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: `Eres un asistente literario experto. Cuando te den el título de un libro (y opcionalmente el autor), responde ÚNICAMENTE con un objeto JSON válido con este formato exacto:
+{
+  "title": "título exacto del libro",
+  "author": "nombre completo del autor",
+  "year": "año de publicación",
+  "genre": "género literario",
+  "isbn": "ISBN-13 o ISBN-10 del libro (solo dígitos, sin guiones). Si no lo sabes con certeza, pon null",
+  "synopsis": "sinopsis de 3-4 frases en español, fluida y literaria, sin spoilers importantes"
+}
+No incluyas texto antes ni después del JSON. No uses comillas especiales.`,
+        messages: [{
+          role: "user",
+          content: `Libro: "${title}"${author ? ` de ${author}` : ''}`
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content.find(b => b.type === 'text')?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const info = JSON.parse(clean);
+
+    if (info.title) document.getElementById('f-title').value = info.title;
+    if (info.author) document.getElementById('f-author').value = info.author;
+    if (info.synopsis) document.getElementById('f-synopsis').value = info.synopsis;
+
+    btn.innerHTML = `<span class="spinner"></span> Buscando portada...`;
+
+    // 2. Search cover via Open Library
+    let coverUrl = null;
+
+    // Try by ISBN first (most reliable)
+    if (info.isbn) {
+      const testUrl = `https://covers.openlibrary.org/b/isbn/${info.isbn}-L.jpg?default=false`;
+      try {
+        const r = await fetch(testUrl, { method: 'HEAD' });
+        if (r.ok) coverUrl = testUrl;
+      } catch(_) {}
+    }
+
+    // Fallback: search by title+author in Open Library API
+    if (!coverUrl) {
+      const q = encodeURIComponent(`${info.title || title} ${info.author || author}`);
+      const searchResp = await fetch(`https://openlibrary.org/search.json?q=${q}&limit=5&fields=cover_i,isbn`);
+      const searchData = await searchResp.json();
+      const docs = searchData.docs || [];
+      for (const doc of docs) {
+        if (doc.cover_i) {
+          coverUrl = `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
+          break;
+        }
+        if (doc.isbn && doc.isbn[0]) {
+          const testUrl = `https://covers.openlibrary.org/b/isbn/${doc.isbn[0]}-L.jpg?default=false`;
+          try {
+            const r = await fetch(testUrl, { method: 'HEAD' });
+            if (r.ok) { coverUrl = testUrl; break; }
+          } catch(_) {}
+        }
+      }
+    }
+
+    window._coverUrl = coverUrl || null;
+
+    // Show cover preview in form
+    const previewEl = document.getElementById('coverPreview');
+    if (previewEl) {
+      if (coverUrl) {
+        previewEl.innerHTML = `<img src="${coverUrl}" alt="Portada" onerror="this.parentElement.innerHTML='📖'">`;
+      } else {
+        previewEl.innerHTML = `<span style="font-size:0.75rem;color:rgba(26,20,16,0.4);padding:0.5rem;text-align:center;display:block">Sin portada</span>`;
+      }
+    }
+
+    btn.innerHTML = `<span>✅</span> ${coverUrl ? 'Portada y sinopsis encontradas' : 'Información encontrada'}`;
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = `<span>✨</span> Buscar información y portada con IA`;
+    }, 3000);
+
+  } catch (e) {
+    console.error(e);
+    btn.innerHTML = `<span>⚠️</span> Error al buscar`;
+    btn.disabled = false;
+    setTimeout(() => { btn.innerHTML = `<span>✨</span> Buscar información con IA`; }, 3000);
+  }
+}
+
+// ---- SAVE ----
+function saveBook() {
+  const title = document.getElementById('f-title').value.trim();
+  const author = document.getElementById('f-author').value.trim();
+  if (!title) { alert('El título es obligatorio'); return; }
+
+  const book = {
+    id: editingId || Date.now().toString(),
+    title,
+    author,
+    synopsis: document.getElementById('f-synopsis').value.trim(),
+    status: window._status || 'want',
+    date: document.getElementById('f-date')?.value || '',
+    rating: window._rating || 0,
+    opinion: document.getElementById('f-opinion')?.value.trim() || '',
+    coverUrl: window._coverUrl || '',
+    createdAt: editingId ? (books.find(b=>b.id===editingId)?.createdAt || Date.now()) : Date.now()
+  };
+
+  if (editingId) {
+    books = books.map(b => b.id === editingId ? book : b);
+  } else {
+    books.unshift(book);
+  }
+
+  localStorage.setItem('mybooks', JSON.stringify(books));
+  closeModal();
+  renderBooks();
+}
+
+// ---- DELETE ----
+function deleteBook() {
+  if (!confirm('¿Eliminar este libro de tu biblioteca?')) return;
+  books = books.filter(b => b.id !== editingId);
+  localStorage.setItem('mybooks', JSON.stringify(books));
+  closeModal();
+  renderBooks();
+}
+
+// ---- DETAIL ----
+function openDetail(id) {
+  const b = books.find(x => x.id === id);
+  if (!b) return;
+  editingId = id;
+  const colorIdx = Math.abs([...b.title].reduce((a,c)=>a+c.charCodeAt(0),0)) % 8;
+  const stars = b.rating ? '★'.repeat(b.rating) + '☆'.repeat(5-b.rating) : '—';
+  const dateStr = b.date ? new Date(b.date+'T12:00:00').toLocaleDateString('es-ES', {day:'numeric',month:'long',year:'numeric'}) : '—';
+
+  document.getElementById('modalTitle').textContent = '';
+  document.getElementById('modalSubtitle').textContent = '';
+  document.getElementById('modalBody').innerHTML = '';
+
+  // Rebuild modal for detail
+  const hasCover = !!b.coverUrl;
+  const colorIdx2 = Math.abs([...b.title].reduce((a,c)=>a+c.charCodeAt(0),0)) % 8;
+
+  const detailCoverHtml = hasCover
+    ? `<div class="detail-cover color-${colorIdx2}" style="height:180px;">
+        <img class="cover-img-large" src="${esc(b.coverUrl)}" alt="Portada" onerror="this.style.display='none'">
+        <div class="cover-overlay"></div>
+        <span class="detail-cover-title">${esc(b.title)}</span>
+      </div>`
+    : `<div class="detail-cover color-${colorIdx2}">
+        <span class="detail-cover-title">${esc(b.title)}</span>
+      </div>`;
+
+  document.getElementById('modal').innerHTML = `
+    ${detailCoverHtml}
+    <div class="modal-header" style="border:none;padding-bottom:0;gap:1rem;align-items:flex-start">
+      ${hasCover ? `<img src="${esc(b.coverUrl)}" alt="Portada" style="width:70px;height:100px;object-fit:cover;object-position:top;border-radius:3px;box-shadow:3px 3px 12px rgba(0,0,0,0.2);flex-shrink:0;margin-top:-40px;border:3px solid var(--paper);" onerror="this.style.display='none'">` : ''}
+      <div style="flex:1;min-width:0">
+        <h2 style="font-size:1.2rem">${esc(b.title)}</h2>
+        <p>${esc(b.author) || 'Autor desconocido'}</p>
+      </div>
+      <button class="close-btn" onclick="closeModal();rebuildModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-meta">
+        <div class="meta-item">
+          <span class="meta-label">Estado</span>
+          <span class="meta-value">${b.status==='read' ? '✓ Leído' : '♥ Por leer'}</span>
+        </div>
+        ${b.status==='read' ? `
+        <div class="meta-item">
+          <span class="meta-label">Fecha de lectura</span>
+          <span class="meta-value">${dateStr}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Puntuación</span>
+          <span class="meta-value" style="color:var(--gold);font-family:'Lato'">${stars}</span>
+        </div>` : ''}
+      </div>
+      ${b.synopsis ? `
+      <div class="form-section-title" style="font-size:.68rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--brown);margin-bottom:.6rem">Sinopsis</div>
+      <div class="sinopsis-text">${esc(b.synopsis)}</div>` : ''}
+      ${b.opinion ? `
+      <div class="form-section-title" style="font-size:.68rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--brown);margin:.8rem 0 .6rem">Mi opinión</div>
+      <div class="opinion-text">${esc(b.opinion)}</div>` : ''}
+      <div class="form-actions" style="margin-top:1.2rem">
+        <button class="btn-danger" onclick="deleteBook()">🗑 Eliminar</button>
+        <button class="btn-secondary" onclick="closeModal();rebuildModal()">Cerrar</button>
+        <button class="btn-primary" onclick="openEditFromDetail('${b.id}')">✏️ Editar</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalOverlay').style.display = 'flex';
+}
+
+function rebuildModal() {
+  document.getElementById('modal').innerHTML = `
+    <div class="modal-header">
+      <div>
+        <h2 id="modalTitle">Añadir libro</h2>
+        <p id="modalSubtitle">Completa la ficha o deja que la IA lo haga</p>
+      </div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  `;
+}
+
+function openEditFromDetail(id) {
+  const b = books.find(x => x.id === id);
+  rebuildModal();
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Editar libro';
+  document.getElementById('modalSubtitle').textContent = 'Modifica los datos de la ficha';
+  renderForm(b);
+}
+
+// ---- CHATBOT ----
+let chatHistory = [];
+let chatOpen = false;
+let chatInitialized = false;
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open', chatOpen);
+  document.getElementById('chatBackdrop').classList.toggle('open', chatOpen);
+  if (chatOpen && !chatInitialized) {
+    chatInitialized = true;
+    initChat();
+  }
+  if (chatOpen) setTimeout(() => document.getElementById('chatInput').focus(), 350);
+}
+
+function initChat() {
+  const favoritos = books.filter(b => b.status === 'read' && b.rating >= 4);
+  let welcomeMsg;
+  if (favoritos.length === 0) {
+    welcomeMsg = `¡Hola! Soy tu asesor literario personal. 📚\n\nAún no tienes libros leídos con 4 estrellas o más, pero puedo recomendarte igualmente. Cuéntame qué géneros o temas te interesan y encontraré algo perfecto para ti.`;
+  } else {
+    const titulos = favoritos.map(b => `**${b.title}**`).slice(0, 5).join(', ');
+    welcomeMsg = `¡Hola! He revisado tu biblioteca y veo que has disfrutado especialmente ${titulos}${favoritos.length > 5 ? ' y más' : ''}. 📚\n\nBásandome en tus gustos, puedo recomendarte tu próxima gran lectura. ¿Qué te apetece explorar?`;
+  }
+  appendBotMessage(welcomeMsg);
+}
+
+function getLibraryContext() {
+  const leidos = books.filter(b => b.status === 'read');
+  const favoritos = leidos.filter(b => b.rating >= 4);
+  const porLeer = books.filter(b => b.status === 'want');
+
+  let ctx = 'BIBLIOTECA DEL USUARIO:\n\n';
+
+  if (favoritos.length > 0) {
+    ctx += `LIBROS FAVORITOS (4-5 estrellas, base para recomendaciones):\n`;
+    favoritos.forEach(b => {
+      ctx += `- "${b.title}" de ${b.author || 'autor desconocido'} — ${b.rating}★`;
+      if (b.opinion) ctx += ` — Opinión: "${b.opinion.slice(0,120)}"`;
+      ctx += '\n';
+    });
+    ctx += '\n';
+  }
+
+  const normales = leidos.filter(b => b.rating > 0 && b.rating < 4);
+  if (normales.length > 0) {
+    ctx += `Libros leídos con menor puntuación (evitar similares):\n`;
+    normales.forEach(b => { ctx += `- "${b.title}" de ${b.author || '?'} — ${b.rating}★\n`; });
+    ctx += '\n';
+  }
+
+  if (porLeer.length > 0) {
+    ctx += `En lista por leer (no recomendar estos):\n`;
+    porLeer.forEach(b => { ctx += `- "${b.title}"\n`; });
+    ctx += '\n';
+  }
+
+  return ctx;
+}
+
+function appendBotMessage(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg bot';
+  // Convert **bold** markdown
+  const html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+  div.innerHTML = `
+    <div class="chat-msg-avatar">✦</div>
+    <div class="chat-msg-bubble">${html}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function appendUserMessage(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg user';
+  div.innerHTML = `
+    <div class="chat-msg-avatar">yo</div>
+    <div class="chat-msg-bubble">${esc(text).replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-typing';
+  div.id = 'typingIndicator';
+  div.innerHTML = `
+    <div class="chat-msg-avatar" style="background:linear-gradient(135deg,var(--gold),#e8a820);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✦</div>
+    <div class="typing-dots">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function sendSuggestion(btn) {
+  const text = btn.textContent;
+  document.getElementById('chatSuggestions').style.display = 'none';
+  sendMessage(text);
+}
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+}
+
+function autoResizeChat(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+  sendMessage(text);
+}
+
+async function sendMessage(userText) {
+  appendUserMessage(userText);
+  document.getElementById('chatSuggestions').style.display = 'none';
+  document.getElementById('chatSendBtn').disabled = true;
+  showTyping();
+
+  // Build conversation history for Claude
+  chatHistory.push({ role: 'user', content: userText });
+
+  const systemPrompt = `Eres un asesor literario apasionado y culto que recomienda libros de forma personalizada. Hablas en español, con un tono cálido, cercano y entusiasta — como un amigo con mucho criterio literario.
+
+${getLibraryContext()}
+
+INSTRUCCIONES:
+- Basa tus recomendaciones principalmente en los libros favoritos del usuario (4-5 estrellas).
+- No recomiendes libros que ya tiene en su biblioteca (ni leídos ni por leer).
+- Cuando recomiendes libros, menciona siempre el título en **negrita** y el autor, y explica brevemente por qué le gustará basándote en sus preferencias demostradas.
+- Sé concreto: recomienda 2-4 libros por respuesta, no listas largas.
+- Si el usuario no tiene favoritos, pide que te cuente qué géneros o temas le interesan.
+- Mantén conversaciones fluidas — recuerda lo que se ha hablado antes.
+- Puedes hacer preguntas para afinar las recomendaciones (¿prefieres algo ligero o intenso? ¿ficción o no ficción?).
+- Respuestas concisas pero ricas en contenido. Máximo 200 palabras por respuesta.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        system: systemPrompt,
+        messages: chatHistory
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content?.find(b => b.type === 'text')?.text || 'Lo siento, no pude generar una respuesta. Inténtalo de nuevo.';
+
+    chatHistory.push({ role: 'assistant', content: reply });
+    hideTyping();
+    appendBotMessage(reply);
+
+  } catch (e) {
+    console.error(e);
+    hideTyping();
+    appendBotMessage('Ups, algo ha fallado. Comprueba tu conexión e inténtalo de nuevo.');
+    chatHistory.pop(); // remove failed user message
+  } finally {
+    document.getElementById('chatSendBtn').disabled = false;
+  }
+}
+
+// ---- INIT ----
+renderBooks();
+</script>
+</body>
+</html>
